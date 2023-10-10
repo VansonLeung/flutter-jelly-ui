@@ -1,14 +1,101 @@
 part of '../flutter_jellyui.dart';
 
+class JellyUiAnimationWidgetStyle {
+
+  final Duration duration;
+  final Duration reverseDuration;
+
+  final bool shouldReverseInactive;
+  final bool shouldReverseActive;
+
+  final double scaleUpX;
+  final double scaleUpY;
+
+  final double scaleBaseX;
+  final double scaleBaseY;
+
+  final double damping;
+  final double stiffness;
+  final double mass;
+
+  final double dampingReverse;
+  final double stiffnessReverse;
+  final double massReverse;
+
+  final double dampingRight;
+  final double stiffnessRight;
+  final double massRight;
+
+  final double dampingRightReverse;
+  final double stiffnessRightReverse;
+  final double massRightReverse;
+
+  const JellyUiAnimationWidgetStyle({
+    this.duration = const Duration(seconds: 1),
+    this.reverseDuration = const Duration(seconds: 1),
+    this.shouldReverseInactive = false,
+    this.shouldReverseActive = false,
+    this.scaleUpX = 0.15,
+    this.scaleUpY = 0.15,
+    this.scaleBaseX = 1.0,
+    this.scaleBaseY = 1.0,
+    this.damping = 8.0,
+    this.stiffness = 2400.0,
+    this.mass = 2.0,
+    this.dampingReverse = 8.0,
+    this.stiffnessReverse = 2400.0,
+    this.massReverse = 2.0,
+    this.dampingRight = 10.0,
+    this.stiffnessRight = 2600.0,
+    this.massRight = 1.0,
+    this.dampingRightReverse = 10.0,
+    this.stiffnessRightReverse = 2600.0,
+    this.massRightReverse = 1.0,
+  });
+
+  static const JellyUiAnimationWidgetStyle defaultStyle = JellyUiAnimationWidgetStyle();
+}
+
+class JellyUiAnimationStateController {
+  final Function(AnimationStatus)? onAnimationStatusChange;
+
+  bool isBusy = false;
+
+  late Function animate;
+
+  JellyUiAnimationStateController({
+    this.onAnimationStatusChange,
+  });
+
+  void didAnimationStatusChange(AnimationStatus status) {
+
+    if (status == AnimationStatus.dismissed
+    || status == AnimationStatus.completed) {
+      isBusy = false;
+    } else {
+      isBusy = true;
+    }
+
+    if (onAnimationStatusChange != null) {
+      onAnimationStatusChange!(status);
+    }
+  }
+
+}
+
 class JellyUiAnimationWidget extends StatefulWidget {
 
   final bool isActive;
   final Widget child;
+  final JellyUiAnimationWidgetStyle style;
+  final JellyUiAnimationStateController? stateController;
 
   const JellyUiAnimationWidget({
     super.key,
     required this.isActive,
     required this.child,
+    this.style = JellyUiAnimationWidgetStyle.defaultStyle,
+    this.stateController,
   });
 
   @override
@@ -17,7 +104,6 @@ class JellyUiAnimationWidget extends StatefulWidget {
 
 class _JellyUiAnimationWidgetState extends State<JellyUiAnimationWidget> with TickerProviderStateMixin {
 
-  Duration duration = const Duration(seconds: 1);
   late AnimationController _animationControllerScaleX;
   late AnimationController _animationControllerScaleY;
   late Animation<double> _animationScaleX;
@@ -26,9 +112,15 @@ class _JellyUiAnimationWidgetState extends State<JellyUiAnimationWidget> with Ti
   @override
   void initState() {
     super.initState();
+
+    widget.stateController?.animate = () {
+      animate(widget.isActive);
+    };
+
     _animationControllerScaleX = AnimationController(
       vsync: this,
-      duration: duration,
+      duration: widget.style.duration,
+      reverseDuration: widget.style.reverseDuration,
       lowerBound: 0.0,
       upperBound: 1.0,
       value: 1,
@@ -36,7 +128,8 @@ class _JellyUiAnimationWidgetState extends State<JellyUiAnimationWidget> with Ti
     );
     _animationControllerScaleY = AnimationController(
         vsync: this,
-        duration: duration,
+        duration: widget.style.duration,
+        reverseDuration: widget.style.reverseDuration,
         lowerBound: 0.0,
         upperBound: 1.0,
       value: 1,
@@ -45,30 +138,71 @@ class _JellyUiAnimationWidgetState extends State<JellyUiAnimationWidget> with Ti
     _animationScaleX = CurvedAnimation(
       parent: _animationControllerScaleX,
       // curve: Curves.linear,
-      curve: Sprung.custom(damping: 8, stiffness: 2400, mass: 2.0),
-      reverseCurve: Sprung.custom(damping: 8, stiffness: 2400, mass: 2.0),
-    );
+      curve: Sprung.custom(
+          damping: widget.style.damping,
+          stiffness: widget.style.stiffness,
+          mass: widget.style.mass),
+      reverseCurve: Sprung.custom(
+          damping: widget.style.dampingReverse,
+          stiffness: widget.style.stiffnessReverse,
+          mass: widget.style.massReverse),
+    )..addStatusListener(onRecvAnimationStatus);
 
     _animationScaleY = CurvedAnimation(
       parent: _animationControllerScaleY,
       // curve: Curves.linear,
-      curve: Sprung.custom(damping: 10, stiffness: 600, mass: 1.0),
-      reverseCurve: Sprung.custom(damping: 10, stiffness: 1000, mass: 1.0),
+      curve: Sprung.custom(
+          damping: widget.style.dampingRight,
+          stiffness: widget.style.stiffnessRight,
+          mass: widget.style.massRight),
+      reverseCurve: Sprung.custom(
+          damping: widget.style.dampingRightReverse,
+          stiffness: widget.style.stiffnessRightReverse,
+          mass: widget.style.massRightReverse),
     );
+  }
+
+
+  void onRecvAnimationStatus(AnimationStatus status) {
+    if (widget.stateController != null) {
+      widget.stateController!.didAnimationStatusChange(status);
+    }
+  }
+
+
+  void animate(bool isActive) {
+    if (isActive) {
+      if (widget.style.shouldReverseActive == true) {
+        _animationControllerScaleX.reverse(from: 1.0);
+        _animationControllerScaleY.reverse(from: 1.0);
+      } else {
+        _animationControllerScaleX.forward(from: 0.0);
+        _animationControllerScaleY.forward(from: 0.0);
+      }
+    } else {
+      if (widget.style.shouldReverseInactive == true) {
+        _animationControllerScaleX.reverse(from: 1.0);
+        _animationControllerScaleY.reverse(from: 1.0);
+      } else {
+        _animationControllerScaleX.forward(from: 0.0);
+        _animationControllerScaleY.forward(from: 0.0);
+      }
+    }
   }
 
   @override
   void didUpdateWidget(covariant JellyUiAnimationWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.isActive != widget.isActive) {
-      if (widget.isActive) {
-        _animationControllerScaleX.forward(from: 0.0);
-        _animationControllerScaleY.forward(from: 0.0);
-      } else {
-        _animationControllerScaleX.forward(from: 0.0);
-        _animationControllerScaleY.forward(from: 0.0);
-      }
+      animate(widget.isActive);
     }
+  }
+
+  @override
+  void dispose() {
+    _animationControllerScaleX.dispose();
+    _animationControllerScaleY.dispose();
+    super.dispose();
   }
 
   @override
@@ -101,14 +235,39 @@ class _JellyUiAnimationWidgetState extends State<JellyUiAnimationWidget> with Ti
         child: widget.child,
         builder: (BuildContext context, Widget? child) {
 
-          const double scaleUpX = 0.5;
-          const double scaleUpY = 0.5;
+          final scaleBaseX = widget.style.scaleBaseX ?? 1.0;
+          final scaleBaseY = widget.style.scaleBaseY ?? 1.0;
+          final scaleUpX = widget.style.scaleUpX ?? 0.0;
+          final scaleUpY = widget.style.scaleUpY ?? 0.0;
 
-          final Matrix4 transform = Matrix4.identity()
-            ..scale(
-                widget.isActive ? (1.0 + _animationScaleX.value*scaleUpX) : (1.0 + scaleUpX - _animationScaleX.value*scaleUpX),
-                widget.isActive ? (1.0 + _animationScaleY.value*scaleUpY) : (1.0 + scaleUpY - _animationScaleY.value*scaleUpY),
-                1.0);
+          Matrix4 transform = Matrix4.identity();
+          if (widget.isActive) {
+            if (widget.style.shouldReverseActive == true) {
+              transform = transform..scale(
+                  (scaleBaseX + scaleUpX - _animationScaleX.value * scaleUpX),
+                  (scaleBaseY + scaleUpY - _animationScaleY.value * scaleUpY),
+                  1.0);
+            } else {
+              transform = transform..scale(
+                  (scaleBaseX + _animationScaleX.value * scaleUpX),
+                  (scaleBaseY + _animationScaleY.value * scaleUpY),
+                  1.0);
+            }
+          } else {
+
+            if (widget.style.shouldReverseInactive == true) {
+              transform = transform..scale(
+                  (scaleBaseX + _animationScaleX.value * scaleUpX),
+                  (scaleBaseY + _animationScaleY.value * scaleUpY),
+                  1.0);
+            } else {
+              transform = transform..scale(
+                  (scaleBaseX + scaleUpX - _animationScaleX.value * scaleUpX),
+                  (scaleBaseY + scaleUpY - _animationScaleY.value * scaleUpY),
+                  1.0);
+            }
+          }
+
 
           return Transform(
             transform: transform,

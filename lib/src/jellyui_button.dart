@@ -1,21 +1,23 @@
 part of '../flutter_jellyui.dart';
 
-class JellyUiButton extends StatefulWidget {
+class JellyUiButtonLegacy extends StatefulWidget {
 
   final Function? onPressed;
   final Widget child;
+  final JellyUiAnimationWidgetStyle? style;
 
-  const JellyUiButton({
+  const JellyUiButtonLegacy({
     super.key,
     required this.onPressed,
     required this.child,
+    this.style,
   });
 
   @override
-  State<JellyUiButton> createState() => _JellyUiButtonState();
+  State<JellyUiButtonLegacy> createState() => _JellyUiButtonLegacyState();
 }
 
-class _JellyUiButtonState extends State<JellyUiButton> {
+class _JellyUiButtonLegacyState extends State<JellyUiButtonLegacy> {
 
   bool _isPressing = false;
 
