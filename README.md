@@ -136,5 +136,7 @@ void _displayJellyDialog() {
 ```
 ☐ Better support for other user-interactable Material elements / drop-in Material classes e.g. Checkbox, Radio, SegmentedButton  
 ☐ Better support for other generic elements e.g. Text, Snackbar
-☐ Add limited rebound_dart capability as an alternative of AnimationBuilder 
+☐ Add limited rebound_dart capability as an alternative of AnimationBuilder
+☐ Add extensive ways to animate the jelly passively (via state change) or actively (via controller method call)
+☐ Create documentations for the said extensive ways above
 ☐ Performance improvement
