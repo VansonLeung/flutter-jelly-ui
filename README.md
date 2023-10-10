@@ -140,3 +140,5 @@ void _displayJellyDialog() {
 ☐ Add extensive ways to animate the jelly passively (via state change) or actively (via controller method call)
 ☐ Create documentations for the said extensive ways above
 ☐ Performance improvement
+☐ Local animation toggle settings
+☐ Global animation toggle settings
