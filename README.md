@@ -15,6 +15,10 @@ flutter_jellyui: ^1.0.0
 
 ## Usage
 
+#### `JellyUiButton`
+
+https://github.com/VansonLeung/flutter-jelly-ui/assets/1129695/8af8c353-d5fa-4f73-803a-816bfa75166a
+
 ```dart
 // JellyUiButton: Direct drop-in replacement of ElevatedButton
 JellyUiButton(
@@ -26,6 +30,11 @@ JellyUiButton(
   ),
 )
 ```
+
+
+#### `JellyUiContainer`
+
+https://github.com/VansonLeung/flutter-jelly-ui/assets/1129695/6d66d264-502d-4738-b9fc-3b77ea911ce9
 
 ```dart
 // JellyUiContainer - Jelly-style dialogs support
